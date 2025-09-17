@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TikTok Tea Corner — Order Online</title>
+  <style>
+    :root{
+      --accent:#ff4d6d;
+      --accent-2:#ffb86b;
+      --muted:#666;
+      --card:#fff;
+      --bg:#faf7f8;
+      --glass: rgba(255,255,255,0.7);
+      --shadow: 0 6px 20px rgba(0,0,0,0.08);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#fff);}
+    /* Header */
+    .site-header{
+      display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;position:sticky;top:0;z-index:40;box-shadow:var(--shadow)
+    }
+    .brand{
+      display:flex;gap:12px;align-items:center;font-weight:700;font-size:18px;
+    }
+    .brand .logo{
+      width:44px;height:44px;border-radius:8px;background:white;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.12);
+    }
+    .header-right{display:flex;gap:12px;align-items:center;}
+    .btn{
+      background:rgba(255,255,255,0.15);border:0;color:white;padding:8px 12px;border-radius:10px;font-weight:600;
+    }
+    .cart-btn{position:relative;}
+    .cart-count{
+      position:absolute;right:-6px;top:-6px;background:black;color:white;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;
+    }
+
+    /* Layout */
+    .container{max-width:1100px;margin:18px auto;padding:0 16px;}
+    .hero{
+      background:linear-gradient(90deg,rgba(255,77,109,0.08),rgba(255,184,107,0.06));
+      border-radius:12px;padding:18px;display:flex;gap:18px;align-items:center;box-shadow:var(--shadow);
+    }
+    .hero-info{flex:1;}
+    .hero h1{margin:0;font-size:22px;color:#222;}
+    .hero p{margin:6px 0 0;color:var(--muted);}
+    .phone{font-weight:700;margin-top:8px;}
+
+    /* Products grid */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px;}
+    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;}
+    .pr-head{display:flex;align-items:center;gap:12px;}
+    .thumb{width:72px;height:72px;border-radius:8px;background:linear-gradient(180deg,#fff,#f3f3f3);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);font-size:12px}
+    .name{font-weight:700}
+    .desc{font-size:13px;color:var(--muted)}
+    .price{margin-left:auto;font-weight:800;color:var(--accent)}
+    .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+    .add-btn{background:var(--accent);color:white;border:0;padding:8px 10px;border-radius:10px;font-weight:700;cursor:pointer}
+
+    /* Floating cart pane */
+    .cart-pane{
+      position:fixed;right:18px;bottom:18px;width:320px;max-width:92vw;background:var(--card);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.18);overflow:hidden;
+      transform:translateY(12px);transition:all .22s ease-in-out;display:flex;flex-direction:column;
+    }
+    .cart-pane.hidden{opacity:0;pointer-events:none;transform:translateY(40px) scale(.98)}
+    .cart-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f1f1f1}
+    .cart-list{padding:10px;max-height:320px;overflow:auto}
+    .cart-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #f3f3f3}
+    .qty{display:flex;gap:6px;align-items:center}
+    .qty button{width:28px;height:28px;border-radius:7px;border:1px solid #eee;background:white;cursor:pointer}
+    .total-row{padding:12px 14px;border-top:1px solid #f1f1f1;display:flex;align-items:center;justify-content:space-between}
+    .checkout-btn{background:var(--accent);color:white;padding:10px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer}
+
+    /* Modal */
+    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;padding:18px;z-index:60}
+    .modal{width:100%;max-width:520px;background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+    .field{display:flex;flex-direction:column;margin-bottom:10px}
+    .field label{font-weight:700;font-size:13px;margin-bottom:6px}
+    .field input, .field textarea{padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px}
+    .small{font-size:13px;color:var(--muted)}
+
+    @media (max-width:600px){
+      .hero{flex-direction:column;align-items:flex-start}
+      .cart-pane{right:12px;bottom:12px;width:92vw}
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">TT</div>
+      <div>
+        <div style="font-size:16px">TikTok Tea Corner</div>
+        <div style="font-size:12px;opacity:.9">Tea • Coffee • Snacks</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="phone small">📞 7505363468</div>
+      <button class="btn" id="open-menu">Menu</button>
+      <div class="cart-btn">
+        <button class="btn cart-toggle">Cart</button>
+        <div class="cart-count" id="cart-count">0</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-info">
+        <h1>Welcome to TikTok Tea Corner</h1>
+        <p>Fresh hot chai, coffee, milkshakes and snacks — orders for pickup or delivery (enter address while ordering).</p>
+        <div class="phone">Call / WhatsApp: <strong>7505363468</strong></div>
+      </div>
+      <div style="min-width:140px;text-align:right">
+        <div style="font-weight:700;color:var(--accent);font-size:18px">Open now</div>
+        <div class="small">Serving quality tea since today 😄</div>
+      </div>
+    </section>
+
+    <section style="margin-top:16px">
+      <h2 style="margin:8px 0 10px">Menu</h2>
+
+      <div class="grid" id="product-grid">
+        <!-- Products are injected by JS -->
+      </div>
+    </section>
+
+    <footer style="text-align:center;margin:34px 0;color:var(--muted);font-size:13px">
+      © TikTok Tea Corner — Demo website. Customize names, items and prices in the HTML file.
+    </footer>
+  </main>
+
+  <!-- Cart pane -->
+  <div class="cart-pane hidden" id="cart-pane" aria-hidden="true">
+    <div class="cart-header">
+      <strong>Your Order</strong>
+      <button class="btn" id="close-cart">Close</button>
+    </div>
+    <div class="cart-list" id="cart-list">
+      <div style="padding:18px;color:var(--muted)" id="empty-msg">Cart is empty — add something yummy!</div>
+    </div>
+    <div class="total-row">
+      <div>
+        <div class="small">Subtotal</div>
+        <div id="subtotal-text" style="font-weight:800">₹0</div>
+      </div>
+      <div>
+        <button class="checkout-btn" id="checkout">Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout modal (hidden) -->
+  <div id="modal-root" style="display:none"></div>
+
+<script>
+/*
+ Single-file front-end ordering system.
+ - Products preloaded (edit below)
+ - Cart stored in localStorage ('ttcart_v1')
+ - Checkout modal collects name, phone, address (address required)
+ - On "Place order" we simulate submission and clear cart
+*/
+
+const PRODUCTS = [
+  { id: 'tea', name: 'Chai (Tea)', desc: 'Hot masala tea', price: 10 },
+  { id: 'coffee', name: 'Coffee', desc: 'Fresh brewed coffee', price: 20 },
+  { id: 'cold-masala', name: 'Cold Masala Chai', desc: 'Iced masala tea', price: 15 },
+  { id: 'milkshake', name: 'Milkshake', desc: 'Cold milkshake', price: 25 },
+  { id: 'bun-maska', name: 'Bun Maska', desc: 'Butter toasted bun', price: 25 }
+];
+
+// Simple helpers
+const $ = sel => document.querySelector(sel);
+const qs = sel => Array.from(document.querySelectorAll(sel));
+
+/* ----------------- Render products ----------------- */
+function createProductCard(p){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="pr-head">
+      <div class="thumb">${p.name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}</div>
+      <div>
+        <div class="name">${p.name}</div>
+        <div class="desc">${p.desc}</div>
+      </div>
+      <div class="price">₹${p.price}</div>
+    </div>
+    <div class="card-foot">
+      <div style="color:var(--muted);font-size:13px">Available</div>
+      <button class="add-btn" data-add="${p.id}">Add</button>
+    </div>
+  `;
+  return card;
+}
+
+const grid = $('#product-grid');
+PRODUCTS.forEach(p => grid.appendChild(createProductCard(p)));
+
+/* ----------------- Cart logic ----------------- */
+const STORAGE_KEY = 'ttcart_v1';
+
+function loadCart(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; } }
+function saveCart(cart){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); updateCartUI(); }
+
+function addToCart(productId, qty=1){
+  const cart = loadCart();
+  cart[productId] = (cart[productId]||0) + qty;
+  saveCart(cart);
+}
+
+function removeFromCart(productId){
+  const cart = loadCart();
+  delete cart[productId];
+  saveCart(cart);
+}
+
+function setQty(productId, qty){
+  const cart = loadCart();
+  if(qty <= 0) delete cart[productId];
+  else cart[productId] = qty;
+  saveCart(cart);
+}
+
+function cartItems(){
+  const cart = loadCart();
+  return Object.keys(cart).map(id => {
+    const product = PRODUCTS.find(p=>p.id===id);
+    return { product, qty: cart[id] };
+  });
+}
+
+function cartCount(){
+  return Object.values(loadCart()).reduce((s,v)=>s+v,0);
+}
+
+function cartSubtotal(){
+  return cartItems().reduce((s,it)=>s + it.product.price * it.qty, 0);
+}
+
+/* ----------------- UI updates ----------------- */
+function updateCartUI(){
+  const pane = $('#cart-pane');
+  const list = $('#cart-list');
+  const cnt = $('#cart-count');
+  const subtotalText = $('#subtotal-text');
+
+  const items = cartItems();
+  cnt.textContent = cartCount();
+
+  // render list
+  list.innerHTML = '';
+  if(items.length === 0){
+    list.innerHTML = '<div style="padding:18px;color:var(--muted)" id="empty-msg">Cart is empty — add something yummy!</div>';
+  } else {
+    items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.innerHTML = `
+        <div style="flex:1">
+          <div style="font-weight:700">${it.product.name}</div>
+          <div style="font-size:13px;color:var(--muted)">₹${it.product.price} × ${it.qty} = <strong>₹${it.product.price * it.qty}</strong></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div class="qty">
+            <button data-dec="${it.product.id}">−</button>
+            <div style="min-width:26px;text-align:center">${it.qty}</div>
+            <button data-inc="${it.product.id}">+</button>
+          </div>
+          <button data-remove="${it.product.id}" style="border:0;background:transparent;color:var(--muted);font-size:12px;cursor:pointer">Remove</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  subtotalText.textContent = '₹' + cartSubtotal();
+}
+
+/* ----------------- Event listeners ----------------- */
+document.addEventListener('click', (e)=>{
+  const add = e.target.closest('[data-add]');
+  if(add){
+    const id = add.getAttribute('data-add');
+    addToCart(id,1);
+    showCartPane();
+    return;
+  }
+  const inc = e.target.closest('[data-inc]');
+  if(inc){ setQty(inc.getAttribute('data-inc'), (loadCart()[inc.getAttribute('data-inc')]||0) + 1); return; }
+  const dec = e.target.closest('[data-dec]');
+  if(dec){ setQty(dec.getAttribute('data-dec'), (loadCart()[dec.getAttribute('data-dec')]||0) - 1); return; }
+  const rem = e.target.closest('[data-remove]');
+  if(rem){ removeFromCart(rem.getAttribute('data-remove')); return; }
+});
+
+$('#open-menu').addEventListener('click', ()=>{ window.scrollTo({top:document.querySelector('.container').offsetTop,behavior:'smooth'}); });
+$('.cart-toggle').addEventListener('click', ()=> showCartPane(true));
+$('#close-cart').addEventListener('click', ()=> hideCartPane());
+function showCartPane(forceOpen){ const pane = $('#cart-pane'); pane.classList.remove('hidden'); pane.setAttribute('aria-hidden','false'); updateCartUI(); if(forceOpen) pane.scrollIntoView({behavior:'smooth',block:'end'}); }
+function hideCartPane(){ const pane = $('#cart-pane'); pane.classList.add('hidden'); pane.setAttribute('aria-hidden','true'); }
+
+updateCartUI();
+
+/* handle qty button clicks inside cart list (delegated) */
+$('#cart-list').addEventListener('click', (ev)=>{
+  const inc = ev.target.closest('[data-inc]'); if(inc){ setQty(inc.getAttribute('data-inc'), (loadCart()[inc.getAttribute('data-inc')]||0) + 1); return; }
+  const dec = ev.target.closest('[data-dec]'); if(dec){ setQty(dec.getAttribute('data-dec'), (loadCart()[dec.getAttribute('data-dec')]||0) - 1); return; }
+});
+
+/* Checkout flow */
+$('#checkout').addEventListener('click', ()=>{
+  const items = cartItems();
+  if(items.length === 0){ alert('Your cart is empty. Add something to order.'); return; }
+  openCheckoutModal();
+});
+
+function openCheckoutModal(){
+  const root = $('#modal-root');
+  root.style.display = 'block';
+  root.innerHTML = '';
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 style="margin:0 0 8px">Checkout</h3>
+      <div class="small" style="margin-bottom:12px">Please enter your details and delivery address. Address is required for delivery orders.</div>
+
+      <div id="order-summary" style="margin-bottom:12px"></div>
+
+      <div class="field"><label for="cust-name">Full name</label><input id="cust-name" placeholder="Your name" /></div>
+      <div class="field"><label for="cust-phone">Phone</label><input id="cust-phone" placeholder="Mobile number" /></div>
+      <div class="field"><label for="cust-address">Delivery address <span style="color:#c33">*</span></label><textarea id="cust-address" rows="3" placeholder="House no., street, landmark, city, pincode"></textarea></div>
+      <div class="field"><label for="cust-note">Notes (optional)</label><input id="cust-note" placeholder="E.g. no onions / less sugar" /></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn" id="cancel-checkout">Cancel</button>
+        <button class="checkout-btn" id="place-order">Place order</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(back);
+
+  // Populate order summary
+  const sumEl = back.querySelector('#order-summary');
+  const items = cartItems();
+  let html = '<div style="padding:8px;background:#fafafa;border-radius:8px">';
+  items.forEach(it => {
+    html += `<div style="display:flex;justify-content:space-between;padding:6px 0"><div>${it.product.name} × ${it.qty}</div><div>₹${it.product.price * it.qty}</div></div>`;
+  });
+  html += `<hr style="border:none;border-top:1px solid #eee;margin:8px 0"><div style="display:flex;justify-content:space-between;font-weight:800">Total <div>₹${cartSubtotal()}</div></div></div>`;
+  sumEl.innerHTML = html;
+
+  // listeners
+  back.querySelector('#cancel-checkout').addEventListener('click', ()=>{
+    root.style.display = 'none'; root.innerHTML = '';
+  });
+
+  back.querySelector('#place-order').addEventListener('click', ()=>{
+    const name = back.querySelector('#cust-name').value.trim();
+    const phone = back.querySelector('#cust-phone').value.trim();
+    const address = back.querySelector('#cust-address').value.trim();
+    const note = back.querySelector('#cust-note').value.trim();
+
+    if(!name){ alert('Please enter your name.'); return; }
+    if(!phone){ alert('Please enter a phone number.'); return; }
+    if(!address){ alert('Please enter delivery address (required).'); return; }
+
+    // Simulate submission: In a real site you'd POST to a backend endpoint here.
+    const order = {
+      id: 'ORD' + Date.now(),
+      name, phone, address, note,
+      items: cartItems().map(it=>({id:it.product.id,name:it.product.name,price:it.product.price,qty:it.qty})),
+      total: cartSubtotal()
+    };
+
+    // For demo we will show the order summary and clear cart
+    root.innerHTML = '';
+    alert('Order placed!\n\nOrder ID: ' + order.id + '\\nTotal: ₹' + order.total + '\\nWe have recorded your address. (This is a demo — integrate a backend to process orders.)');
+    localStorage.removeItem(STORAGE_KEY);
+    updateCartUI();
+    root.style.display = 'none';
+  });
+
+  // close modal when clicking outside modal area
+  back.addEventListener('click', (ev)=>{
+    if(ev.target === back){ root.style.display = 'none'; root.innerHTML = ''; }
+  });
+}
+
+/* Optional: prefill phone from header */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // attach add button listeners already handled by delegated click
+});
+
+/* Small UX: hide cart pane on load if empty */
+if(cartCount() === 0) hideCartPane(); else showCartPane(false);
+
+</script>
+</body>
+</html>
